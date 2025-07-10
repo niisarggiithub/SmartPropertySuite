@@ -1,0 +1,30 @@
+services:
+  redis:
+    image: redis:7
+    restart: always
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: always
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong!Passw0rd
+    ports:
+      - "1433:1433"
+
+  smartapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - redis
+      - mssql
+    volumes:
+      - ./SmartPropertySuite/google-calendar-ouath-creds.json:/app/google-calendar-ouath-creds.json
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development

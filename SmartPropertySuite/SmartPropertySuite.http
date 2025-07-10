@@ -1,0 +1,6 @@
+@SmartPropertySuite_HostAddress = http://localhost:54321
+
+GET {{SmartPropertySuite_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
