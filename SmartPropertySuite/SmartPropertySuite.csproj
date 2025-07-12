@@ -26,4 +26,10 @@
     <PackageReference Include="TimeZoneConverter" Version="7.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="google-calendar-ouath-creds.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

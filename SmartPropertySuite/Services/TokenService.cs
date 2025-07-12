@@ -12,7 +12,7 @@ namespace SmartPropertySuite.Services
     public class TokenService : ITokenService
     {
         private readonly ApplicationDbContext.ApplicationDbContext _dbContext;
-        private const string ClientSecretFile = "/app/google-calendar-ouath-creds.json";
+        private string ClientSecretFile = Path.Combine(AppContext.BaseDirectory, "google-calendar-ouath-creds.json");
 
         public TokenService(ApplicationDbContext.ApplicationDbContext dbContext)
         {

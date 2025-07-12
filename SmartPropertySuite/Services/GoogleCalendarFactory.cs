@@ -10,8 +10,14 @@ namespace SmartPropertySuite.Services
 {
     public class GoogleCalendarFactory : IGoogleCalendarFactory
     {
-        private readonly string _clientId = "479072257242-plocofkkk22706sctqj9fqm0llkac8nj.apps.googleusercontent.com";
-        private readonly string _clientSecret = "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";
+        private string _clientId;
+        private string _clientSecret;
+
+        public GoogleCalendarFactory(IConfiguration configuration)
+        {
+            _clientId = configuration["GoogleOAuthCredential:ClientId"];
+            _clientSecret = configuration["GoogleOAuthCredential:ClientSecret"];
+        }
 
         public GoogleAuthorizationCodeFlow CreateFlow()
         {

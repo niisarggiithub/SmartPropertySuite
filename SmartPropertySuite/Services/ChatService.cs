@@ -14,9 +14,9 @@ namespace SmartPropertySuite.Services
 
         public ChatService(IConfiguration config)
         {
-            string apiKey = "9p7muyaR68GJ9BoS4WjH7SDxIRSFQXwwMfpve9Dlhpt8KyGJPOZrJQQJ99BEACYeBjFXJ3w3AAABACOGllpc";
-            string endpoint = "https://hackathon-2025-manhattan-1.openai.azure.com/";
-            _deployment = "hackathon-gpt-4o";
+            string apiKey = config["AzureConfiguration:ApiKey"];
+            string endpoint = config["AzureConfiguration:Endpoint"];
+            _deployment = config["AzureConfiguration:Deployment"];
             var credentials = new AzureKeyCredential(apiKey);
 
             AzureOpenAIClient azureClient = new AzureOpenAIClient(new Uri(endpoint), credentials);

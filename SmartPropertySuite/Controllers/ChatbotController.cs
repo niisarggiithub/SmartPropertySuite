@@ -2,6 +2,7 @@
 using SmartPropertySuite.IServices;
 using SmartPropertySuite.Models;
 using SmartPropertySuite.Models.DatabaseModels;
+using StackExchange.Redis;
 using System.Text.Json;
 
 namespace SmartPropertySuite.Controllers
@@ -63,6 +64,9 @@ namespace SmartPropertySuite.Controllers
 
                 if (request.IsNewConversation)
                 {
+                    //Clear old state if it's a new conversation
+                    await _redis.RemoveStateAsync(request.UserEmail);
+
                     var newConversation = new CRMPropertySuiteUserConversations
                     {
                         ChatId = request.ChatId,
@@ -101,10 +105,6 @@ namespace SmartPropertySuite.Controllers
                 await _chatDetails.AddMessages(new List<CRMPropertySuiteUserChatMessages> { newMessage });
 
                 messages = await _chatDetails.GetMessagesById(request.ConversationId);
-
-                //Clear old state if it's a new conversation
-                if (request.IsNewConversation)
-                    await _redis.RemoveStateAsync(request.UserEmail);
 
                 var state = await _redis.GetStateAsync(request.UserEmail);
                 var input = request.Message;
@@ -340,9 +340,17 @@ namespace SmartPropertySuite.Controllers
             }
             catch (Exception ex)
             {
-
                 throw new Exception(ex.Message, ex);
             }
+        }
+
+        [HttpGet("redis-test")]
+        public async Task<IActionResult> TestRedis([FromServices] IConnectionMultiplexer redis)
+        {
+            var db = redis.GetDatabase();
+            await db.StringSetAsync("ping", "pong");
+            var result = await db.StringGetAsync("ping");
+            return Ok(result);
         }
 
         private ExtractionResult DeserializeJson(ChatState state)

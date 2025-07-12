@@ -13,7 +13,7 @@ namespace SmartPropertySuite.Controllers
     [Route("auth")]
     public class GoogleCalendarAuthController : Controller
     {
-        private const string ClientSecretFile = "/app/google-calendar-ouath-creds.json";
+        private string ClientSecretFile = Path.Combine(AppContext.BaseDirectory, "google-calendar-ouath-creds.json");
         private const string RedirectUri = "http://localhost:54321/auth/callback";
         private readonly ITokenService _tokenService;
         private readonly IGoogleCalendarFactory _googleCalendar;
