@@ -27,7 +27,7 @@ namespace SmartPropertySuite.Services
 
         public async Task<CRMPropertySuiteUserChats> GetChatByChatId(Guid chatId)
         {
-            return await _dbContext.CRMPropertySuiteUserChats.FirstOrDefaultAsync(u => u.ChatId == chatId);
+            return await _dbContext.CRMPropertySuiteUserChats.FirstOrDefaultAsync(u => u.ChatId == chatId) ?? new CRMPropertySuiteUserChats();
         }
 
         public async Task AddOrUpdateCoversations(List<CRMPropertySuiteUserConversations> conversations)

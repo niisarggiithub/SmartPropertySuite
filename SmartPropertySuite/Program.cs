@@ -37,6 +37,10 @@ try
 
     var app = builder.Build();
 
+    // Enable serving static files from wwwroot
+    app.UseDefaultFiles();  // Looks for index.html, default.html, etc.
+    app.UseStaticFiles();
+
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {

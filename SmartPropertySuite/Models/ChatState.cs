@@ -2,6 +2,7 @@
 
 namespace SmartPropertySuite.Models
 {
+#nullable disable
     public class ChatState
     {
         public string IssueType { get; set; }
@@ -17,4 +18,5 @@ namespace SmartPropertySuite.Models
                 !string.IsNullOrEmpty(ContactEmail) &&
                 PreferredSlotIndex.HasValue;
     }
+#nullable restore
 }

@@ -61,7 +61,7 @@ namespace SmartPropertySuite.Controllers
                 var userInfoJson = await userInfoResponse.Content.ReadAsStringAsync();
 
                 var userInfo = JsonSerializer.Deserialize<GoogleUserInfo>(userInfoJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                var email = userInfo.Email;
+                var email = userInfo!.Email;
 
                 var expiresIn = tokenResponse.ExpiresInSeconds;
                 var expiryTime = DateTime.Now.AddSeconds(expiresIn ?? 3600);

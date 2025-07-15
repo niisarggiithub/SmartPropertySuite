@@ -1,6 +1,7 @@
 ﻿
 namespace SmartPropertySuite.Models
 {
+#nullable disable
     public class ChatRequest
     {
         public string UserEmail { get; set; } // The email of the user sending the message
@@ -10,4 +11,5 @@ namespace SmartPropertySuite.Models
         public Guid ConversationId { get; set; } // unique identifier for the conversation, created by the mobile team
         public string Sender { get; set; } // e.g., "user" or "assistant"
     }
+#nullable restore
 }

@@ -128,7 +128,7 @@ namespace SmartPropertySuite.Services
             try
             {
                 var token = _dbContext.CRMPropertySuiteUserInfo.FirstOrDefault(x => x.Email == slot.TenantEmail);
-                var credential = _googleCalendar.CreateCredential(token.Email, token.AccessToken, token.RefreshToken, token.ExpiryTime);
+                var credential = _googleCalendar.CreateCredential(token!.Email, token.AccessToken, token.RefreshToken, token.ExpiryTime);
                 var calendarService = _googleCalendar.CreateCalendarService(credential);
                 var ianaTimeZone = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? TZConvert.WindowsToIana(TimeZoneInfo.Local.Id) : TimeZoneInfo.Local.Id;
 

@@ -15,8 +15,8 @@ namespace SmartPropertySuite.Services
 
         public GoogleCalendarFactory(IConfiguration configuration)
         {
-            _clientId = configuration["GoogleOAuthCredential:ClientId"];
-            _clientSecret = configuration["GoogleOAuthCredential:ClientSecret"];
+            _clientId = configuration["GoogleOAuthCredential:ClientId"]!;
+            _clientSecret = configuration["GoogleOAuthCredential:ClientSecret"]!;
         }
 
         public GoogleAuthorizationCodeFlow CreateFlow()

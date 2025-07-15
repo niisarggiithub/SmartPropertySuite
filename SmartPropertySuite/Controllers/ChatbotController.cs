@@ -106,6 +106,10 @@ namespace SmartPropertySuite.Controllers
 
                 messages = await _chatDetails.GetMessagesById(request.ConversationId);
 
+                var eachMessages = _dbContext.CRMPropertySuiteUserChatMessages.Where(x => x.ConversationId == request.ConversationId && x.Sender == "user").Select(x => x.MessageText).ToList();
+
+                chat.ChatTitle = await _chatService.GenerateChatTitleAsync(eachMessages);
+
                 var state = await _redis.GetStateAsync(request.UserEmail);
                 var input = request.Message;
 
@@ -121,7 +125,7 @@ namespace SmartPropertySuite.Controllers
                 //update conversation exreaction in DB
                 var updateConversation = new CRMPropertySuiteUserConversations
                 {
-                    ChatId = conversation.ChatId,
+                    ChatId = conversation!.ChatId,
                     ConversationId = conversation.ConversationId,
                     ExtractionResult = JsonSerializer.Serialize<ChatState>(state, new JsonSerializerOptions { WriteIndented = true, PropertyNameCaseInsensitive = true }),
                     EndedAt = conversation.EndedAt,
@@ -135,7 +139,7 @@ namespace SmartPropertySuite.Controllers
                     var slots = state.AvailableSlots.Count > 0 ? state.AvailableSlots : await _calendar.GetFreeSlotsAsync(state.Priority);
                     if (!slots.Any()) return Ok("No available slots found.");
 
-                    var chosenSlot = slots.ElementAtOrDefault(state.PreferredSlotIndex.Value - 1);
+                    var chosenSlot = slots.ElementAtOrDefault(state.PreferredSlotIndex!.Value - 1);
                     if (chosenSlot == null) return Ok("Invalid slot selected.");
 
                     await _calendar.BookAppointmentAsync(state, chosenSlot);
@@ -262,7 +266,7 @@ namespace SmartPropertySuite.Controllers
                 ";
 
                 var gptResult = await _chatService.GetBotReplyAsync(input, systemPrompt);
-                var response = JsonSerializer.Deserialize<GptResponse>(gptResult, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var response = JsonSerializer.Deserialize<GptResponse>(gptResult, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
 
                 if (response.Classification == "GreetingOnly")
                 {
@@ -358,7 +362,7 @@ namespace SmartPropertySuite.Controllers
             var json = JsonSerializer.Serialize<ChatState>(state, new JsonSerializerOptions { WriteIndented = true, PropertyNameCaseInsensitive = true });
             var jsonDesrialized = JsonSerializer.Deserialize<ExtractionResult>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            return jsonDesrialized;
+            return jsonDesrialized!;
         }
     }
 }

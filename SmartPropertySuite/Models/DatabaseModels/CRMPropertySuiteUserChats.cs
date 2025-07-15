@@ -9,6 +9,7 @@ namespace SmartPropertySuite.Models.DatabaseModels
         public Guid ChatId { get; set; }
         public string Email { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string? ChatTitle { get; set; }
 
         public List<CRMPropertySuiteUserConversations> Conversations { get; set; }
     }

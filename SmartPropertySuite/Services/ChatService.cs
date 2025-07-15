@@ -14,9 +14,9 @@ namespace SmartPropertySuite.Services
 
         public ChatService(IConfiguration config)
         {
-            string apiKey = config["AzureConfiguration:ApiKey"];
-            string endpoint = config["AzureConfiguration:Endpoint"];
-            _deployment = config["AzureConfiguration:Deployment"];
+            string apiKey = config["AzureConfiguration:ApiKey"]!;
+            string endpoint = config["AzureConfiguration:Endpoint"]!;
+            _deployment = config["AzureConfiguration:Deployment"]!;
             var credentials = new AzureKeyCredential(apiKey);
 
             AzureOpenAIClient azureClient = new AzureOpenAIClient(new Uri(endpoint), credentials);
@@ -40,7 +40,7 @@ namespace SmartPropertySuite.Services
 
                 var response = await chatClient.CompleteChatAsync(messages, chatOptions);
 
-                return response?.Value.Content?.FirstOrDefault().Text.Trim();
+                return response?.Value.Content?.FirstOrDefault()?.Text.Trim()!;
             }
             catch (Exception ex)
             {
@@ -87,7 +87,36 @@ namespace SmartPropertySuite.Services
 
                 var response = await GetBotReplyAsync(input, propmt);
 
-                return JsonSerializer.Deserialize<ExtractionResult>(response);
+                return JsonSerializer.Deserialize<ExtractionResult>(response)!;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
+        public async Task<string> GenerateChatTitleAsync(List<string> messages)
+        {
+            try
+            {
+                var systemMessage = "You are a helpful assistant. Given the conversation, return a short, clear chat title (max 10 words). No quotes.";
+
+                string input = string.Join("\n", messages);
+
+                var message = new List<ChatMessage>
+                {
+                    new SystemChatMessage(systemMessage),
+                    new UserChatMessage(input)
+                };
+
+                var chatOptions = new ChatCompletionOptions
+                {
+                    Temperature = 0.7f
+                };
+
+                var response = await chatClient.CompleteChatAsync(message, chatOptions);
+
+                return response?.Value.Content?.FirstOrDefault()?.Text.Trim()!;
             }
             catch (Exception ex)
             {
@@ -116,7 +145,7 @@ namespace SmartPropertySuite.Services
                 ";
 
             var reply = await GetBotReplyAsync(input, prompt);
-            return reply?.Trim().ToLower();
+            return reply?.Trim().ToLower()!;
         }
     }
 }

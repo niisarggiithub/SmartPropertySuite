@@ -17,7 +17,7 @@ namespace SmartPropertySuite.Services
         public async Task<ChatState> GetStateAsync(string userId)
         {
             var value = await _db.StringGetAsync(userId);
-            return value.IsNullOrEmpty ? new ChatState() : JsonSerializer.Deserialize<ChatState>(value);
+            return value.IsNullOrEmpty ? new ChatState() : JsonSerializer.Deserialize<ChatState>(value!)!;
         }
 
         public async Task SaveStateAsync(string userId, ChatState state)
