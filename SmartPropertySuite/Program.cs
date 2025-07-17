@@ -21,6 +21,7 @@ try
     builder.Services.AddScoped<IChatDetails, ChatDetails>();
     builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")));
     builder.Services.AddScoped<IRedisService, RedisService>();
+    builder.Services.AddScoped<IFCMPushNotificationService, FCMPushNotificationService>();
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();

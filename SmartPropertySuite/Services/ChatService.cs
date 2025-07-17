@@ -4,6 +4,7 @@ using System.Text.Json;
 using OpenAI.Chat;
 using SmartPropertySuite.Models;
 using SmartPropertySuite.IServices;
+using System.Text.RegularExpressions;
 
 namespace SmartPropertySuite.Services
 {
@@ -23,7 +24,7 @@ namespace SmartPropertySuite.Services
             chatClient = azureClient.GetChatClient(_deployment);
         }
 
-        public async Task<string> GetBotReplyAsync(string input, string systemPrompt)
+        public async Task<string> GetBotReplyAsync(string input, string systemPrompt, string isExtraction = null)
         {
             try
             {
@@ -40,6 +41,11 @@ namespace SmartPropertySuite.Services
 
                 var response = await chatClient.CompleteChatAsync(messages, chatOptions);
 
+                if (!string.IsNullOrEmpty(isExtraction) && isExtraction == "yes")
+                {
+                    return response?.Value.Content?.FirstOrDefault()?.Text.Trim() ?? "{}";
+                }
+
                 return response?.Value.Content?.FirstOrDefault()?.Text.Trim()!;
             }
             catch (Exception ex)
@@ -52,7 +58,7 @@ namespace SmartPropertySuite.Services
         {
             try
             {
-                var propmt = @"
+                var propmt = $@"
                 You are an assistant for a property management bot. Extract the following structured data from the user input:
                     - IssueType (like plumbing, electrical, etc.)
                     - Priority (low, medium, high)
@@ -75,19 +81,32 @@ namespace SmartPropertySuite.Services
                       ""low"", ""medium"", or ""high""
                     - If no such cues are found, leave Priority as null.
 
-                    Do not add a single keyword or word just respond ONLY with the extracted values in JSON format like:
-                    {
+                    Required Behavior:
+                    - Always return ONLY a single valid JSON object (no markdown, no explanations, no extra text).
+
+                    Do not add a single keyword or word just respond ONLY with the extracted values in JSON object like:
+                    {{
                         ""IssueType"": ""plumbing"",
                         ""Priority"": ""high"",
                         ""ContactEmail"": ""xyz@example.com"",
                         ""PreferredSlotIndex"": 1
-                    }
+                    }}
 
-                    Do NOT add explanations. Leave fields null if not mentioned.";
+                    Very Important:
+                    - Do NOT add any explanation or extra commentary—return ONLY the JSON object.
 
-                var response = await GetBotReplyAsync(input, propmt);
+                    Leave fields null if not mentioned.";
 
-                return JsonSerializer.Deserialize<ExtractionResult>(response)!;
+                var response = await GetBotReplyAsync(input, propmt, "yes");
+
+                //sanitize just in case extra text appears
+                var match = Regex.Match(response, @"\{[\s\S]*\}");
+                string jobject = match.Success ? match.Value : "{}";
+
+                if (!match.Success)
+                    throw new Exception("Invalid JSON response");
+
+                return JsonSerializer.Deserialize<ExtractionResult>(jobject)!;
             }
             catch (Exception ex)
             {

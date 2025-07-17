@@ -11,6 +11,7 @@ namespace SmartPropertySuite.ApplicationDbContext
         public DbSet<CRMPropertySuiteUserChats> CRMPropertySuiteUserChats { get; set; }
         public DbSet<CRMPropertySuiteUserConversations> CRMPropertySuiteUserConversations { get; set; }
         public DbSet<CRMPropertySuiteUserChatMessages> CRMPropertySuiteUserChatMessages { get; set; }
+        public DbSet<CRMPropertyMobileUserDeviceInfo> CRMPropertyMobileUserDeviceInfo { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

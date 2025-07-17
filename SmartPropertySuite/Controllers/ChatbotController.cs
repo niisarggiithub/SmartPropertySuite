@@ -17,8 +17,9 @@ namespace SmartPropertySuite.Controllers
         private readonly ITokenService _tokenService;
         private readonly ApplicationDbContext.ApplicationDbContext _dbContext;
         private readonly IChatDetails _chatDetails;
+        private readonly IFCMPushNotificationService _pushNotificationService;
 
-        public ChatbotController(IChatService chatService, IRedisService redis, IGoogleCalendarService calendar, ITokenService tokenService, ApplicationDbContext.ApplicationDbContext dbContext, IChatDetails chatDetails)
+        public ChatbotController(IChatService chatService, IRedisService redis, IGoogleCalendarService calendar, ITokenService tokenService, ApplicationDbContext.ApplicationDbContext dbContext, IChatDetails chatDetails, IFCMPushNotificationService pushNotificationService)
         {
             _chatService = chatService;
             _redis = redis;
@@ -26,6 +27,7 @@ namespace SmartPropertySuite.Controllers
             _tokenService = tokenService;
             _dbContext = dbContext;
             _chatDetails = chatDetails;
+            _pushNotificationService = pushNotificationService;
         }
 
         [HttpPost("chat")]
@@ -148,20 +150,20 @@ namespace SmartPropertySuite.Controllers
                     var slotDate = chosenSlot.Start.ToLocalTime().ToString("f");
 
                     var confirmationPrompt = $"""
-                    You are a helpful assistant for a property management company.
-                    A user has just booked a maintenance appointment for {slotDate}.
+                        You are a helpful assistant for a property management company.
+                        A user has just booked a maintenance appointment for {slotDate}.
 
-                    Reply with a friendly confirmation message.
+                        Reply with a friendly confirmation message.
 
-                    Below is **just an example** of how to confirm the booking. Use it as a reference to create a similar, polite, and natural variation. You may rephrase creatively, as long as the meaning stays the same:
+                        Below is **just an example** of how to confirm the booking. Use it as a reference to create a similar, polite, and natural variation. You may rephrase creatively, as long as the meaning stays the same:
 
-                    "Great! Your appointment for {slotDate} is confirmed. Let me know if you need help with anything else."
+                        "Great! Your appointment for {slotDate} is confirmed. Let me know if you need help with anything else."
 
-                    Guidelines:
-                    - Keep the response polite and context-aware.
-                    - Do **not** ask for more details.
-                    - Avoid repeating the example exactly unless it fits naturally.
-                    """;
+                        Guidelines:
+                        - Keep the response polite and context-aware.
+                        - Do **not** ask for more details.
+                        - Avoid repeating the example exactly unless it fits naturally.
+                        """;
 
                     var confirmation = await _chatService.GetBotReplyAsync(prompt, confirmationPrompt);
                     var message = new CRMPropertySuiteUserChatMessages
@@ -193,6 +195,22 @@ namespace SmartPropertySuite.Controllers
                     };
 
                     await _redis.RemoveStateAsync(request.UserEmail);
+
+                    state = new ChatState();
+
+                    var notification = _pushNotificationService.GetFCMMobileDeviceInfoByEmail(request.UserEmail);
+
+                    var pushNotification = new FCMPushNotification
+                    {
+                        Body = $"{slotDate} has been booked.",
+                        Title = "Appointment booked.",
+                        Email = notification.Email,
+                        DeviceId = notification.DeviceId,
+                        IsAndroidDevice = notification.IsAndroidDevice,
+                        ChatId = chat.ChatId
+                    };
+
+                    SendPushnotification(pushNotification);
 
                     return Ok(responseMessage);
                 }
@@ -300,7 +318,7 @@ namespace SmartPropertySuite.Controllers
                     await _redis.SaveStateAsync(request.UserEmail, state);
 
                     var slotOptions = string.Join("\n", slots.Select((s, i) =>
-                        $"{i + 1}. {s.Start:f}"));
+                        $"{i + 1}. {s.Start:f} - Tenant: {s.TenantEmail}"));
 
                     var message = new CRMPropertySuiteUserChatMessages
                     {
@@ -363,6 +381,11 @@ namespace SmartPropertySuite.Controllers
             var jsonDesrialized = JsonSerializer.Deserialize<ExtractionResult>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             return jsonDesrialized!;
+        }
+
+        private void SendPushnotification(FCMPushNotification pushNotification)
+        {
+            _pushNotificationService.SendPushNotification(pushNotification);
         }
     }
 }
